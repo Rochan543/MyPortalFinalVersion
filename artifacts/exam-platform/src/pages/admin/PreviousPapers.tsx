@@ -50,7 +50,8 @@ export default function AdminPreviousPapers() {
   const [submitting, setSubmitting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const apiBase = import.meta.env.BASE_URL?.replace(/\/$/, "") + "/api";
+  // const apiBase = import.meta.env.BASE_URL?.replace(/\/$/, "") + "/api";
+  const apiBase = import.meta.env.VITE_API_URL + "/api";
 
   useEffect(() => { fetchPapers(); }, []);
 

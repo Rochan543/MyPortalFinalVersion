@@ -33,7 +33,8 @@ export default function TopicMocks() {
   const [starting, setStarting] = useState<number | null>(null);
   const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
 
-  const apiBase = import.meta.env.BASE_URL?.replace(/\/$/, "") + "/api";
+  // const apiBase = import.meta.env.BASE_URL?.replace(/\/$/, "") + "/api";
+  const apiBase = import.meta.env.VITE_API_URL + "/api";
 
   useEffect(() => {
     fetchMocks();

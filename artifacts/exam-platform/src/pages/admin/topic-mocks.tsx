@@ -57,7 +57,8 @@ export default function AdminTopicMocksPage() {
   const [submitting, setSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
-  const apiBase = import.meta.env.BASE_URL?.replace(/\/$/, "") + "/api";
+  // const apiBase = import.meta.env.BASE_URL?.replace(/\/$/, "") + "/api";
+  const apiBase = import.meta.env.VITE_API_URL + "/api";
 
   useEffect(() => { fetchMocks(); }, []);
 
