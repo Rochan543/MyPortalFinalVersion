@@ -65,7 +65,7 @@ router.post("/admin/create", authenticate, requireAdmin, upload.single("file"), 
 // ── Admin: Upload questions to existing topic mock ───────────────────────────
 router.post("/admin/:id/upload", authenticate, requireAdmin, upload.single("file"), async (req, res) => {
   try {
-    const mockId = parseInt(req.params.id);
+    const mockId = parseInt(String(req.params.id));
     const [mock] = await db.select().from(examsTable).where(and(eq(examsTable.id, mockId), eq(examsTable.isTopicMock, true))).limit(1);
     if (!mock) { res.status(404).json({ error: "Topic mock not found" }); return; }
     if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
@@ -87,14 +87,14 @@ router.post("/admin/:id/upload", authenticate, requireAdmin, upload.single("file
 // ── Admin: Edit topic mock ───────────────────────────────────────────────────
 router.put("/admin/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const mockId = parseInt(req.params.id);
+    const mockId = parseInt(String(req.params.id));
     const { title, subjectName, topicName, duration, negativeMarks } = req.body;
     const [updated] = await db.update(examsTable).set({
       ...(title && { title }),
       ...(subjectName && { subjectName }),
       ...(topicName && { topicName }),
       ...(duration && { duration: parseInt(duration) }),
-      ...(negativeMarks !== undefined && { negativeMarks: parseFloat(negativeMarks) }),
+      ...(negativeMarks !== undefined && { negativeMarks: parseFloat(String(negativeMarks)) }),
     }).where(and(eq(examsTable.id, mockId), eq(examsTable.isTopicMock, true))).returning();
     if (!updated) { res.status(404).json({ error: "Topic mock not found" }); return; }
     res.json(updated);
@@ -107,7 +107,7 @@ router.put("/admin/:id", authenticate, requireAdmin, async (req, res) => {
 // ── Admin: Delete topic mock ─────────────────────────────────────────────────
 router.delete("/admin/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const mockId = parseInt(req.params.id);
+    const mockId = parseInt(String(req.params.id));
     await db.delete(examsTable).where(and(eq(examsTable.id, mockId), eq(examsTable.isTopicMock, true)));
     res.status(204).send();
   } catch (err) {
@@ -119,7 +119,7 @@ router.delete("/admin/:id", authenticate, requireAdmin, async (req, res) => {
 // ── Admin: Publish / Unpublish ───────────────────────────────────────────────
 router.post("/admin/:id/publish", authenticate, requireAdmin, async (req, res) => {
   try {
-    const mockId = parseInt(req.params.id);
+    const mockId = parseInt(String(req.params.id));
     const { publish } = req.body;
     const [updated] = await db.update(examsTable).set({ isPublished: !!publish })
       .where(and(eq(examsTable.id, mockId), eq(examsTable.isTopicMock, true))).returning();
@@ -162,7 +162,7 @@ router.get("/", authenticate, async (req, res) => {
 // ── Student: Get single topic mock detail ────────────────────────────────────
 router.get("/:id", authenticate, async (req, res) => {
   try {
-    const mockId = parseInt(req.params.id);
+    const mockId = parseInt(String(req.params.id));
     const [mock] = await db.select().from(examsTable)
       .where(and(eq(examsTable.id, mockId), eq(examsTable.isTopicMock, true))).limit(1);
     if (!mock) { res.status(404).json({ error: "Topic mock not found" }); return; }
@@ -208,7 +208,7 @@ router.post("/violations/record", authenticate, async (req, res) => {
 // ── Exam Violations: Get status ──────────────────────────────────────────────
 router.get("/violations/:examId", authenticate, async (req, res) => {
   try {
-    const examId = parseInt(req.params.examId);
+    const examId = parseInt(String(req.params.examId));
     const [record] = await db.select().from(examViolationsTable)
       .where(and(eq(examViolationsTable.userId, req.user!.id), eq(examViolationsTable.examId, examId))).limit(1);
     res.json(record || { violationCount: 0, autoSubmitted: false });

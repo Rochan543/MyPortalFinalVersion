@@ -70,7 +70,7 @@ router.post("/admin/resources/upload", authenticate, requireAdmin, upload.single
 // Admin: Edit resource
 router.put("/admin/resources/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { subjectName, topicName, title, description, tags } = req.body;
     const [updated] = await db.update(resourcesTable).set({
       ...(subjectName !== undefined && { subjectName }),
@@ -90,7 +90,7 @@ router.put("/admin/resources/:id", authenticate, requireAdmin, async (req, res) 
 // Admin: Delete resource
 router.delete("/admin/resources/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, id)).limit(1);
     if (resource?.filePath) {
       try { fs.unlinkSync(path.resolve(process.cwd(), resource.filePath)); } catch {}
@@ -130,7 +130,7 @@ router.get("/resources", authenticate, async (req, res) => {
 // Student: Get resource detail
 router.get("/resources/:id", authenticate, async (req, res) => {
   try {
-    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(req.params.id))).limit(1);
+    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
     if (!resource) { res.status(404).json({ error: "Not found" }); return; }
     res.json(resource);
   } catch (err) {
@@ -142,7 +142,7 @@ router.get("/resources/:id", authenticate, async (req, res) => {
 // Student: View / Download resource file
 router.get("/resources/:id/file", authenticate, async (req, res) => {
   try {
-    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(req.params.id))).limit(1);
+    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
     if (!resource?.filePath) { res.status(404).json({ error: "File not found" }); return; }
     const absPath = path.resolve(process.cwd(), resource.filePath);
     if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing on server" }); return; }
@@ -161,7 +161,7 @@ router.get("/resources/:id/file", authenticate, async (req, res) => {
 // Student: Get TXT/DOCX content as text
 router.get("/resources/:id/content", authenticate, async (req, res) => {
   try {
-    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(req.params.id))).limit(1);
+    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
     if (!resource?.filePath) { res.status(404).json({ error: "No file" }); return; }
     const absPath = path.resolve(process.cwd(), resource.filePath);
     if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing" }); return; }
@@ -226,7 +226,7 @@ router.post("/admin/previous-papers/upload", authenticate, requireAdmin, upload.
 // Admin: Edit paper
 router.put("/admin/previous-papers/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const { examName, examYear, shiftName, subjectName, title, description } = req.body;
     const [updated] = await db.update(previousYearPapersTable).set({
       ...(examName !== undefined && { examName }),
@@ -247,7 +247,7 @@ router.put("/admin/previous-papers/:id", authenticate, requireAdmin, async (req,
 // Admin: Delete paper
 router.delete("/admin/previous-papers/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id));
     const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, id)).limit(1);
     if (paper?.filePath) {
       try { fs.unlinkSync(path.resolve(process.cwd(), paper.filePath)); } catch {}
@@ -266,7 +266,7 @@ router.get("/previous-papers", authenticate, async (req, res) => {
     const { examName, year, search } = req.query as Record<string, string>;
     const conditions = [];
     if (examName) conditions.push(eq(previousYearPapersTable.examName, examName));
-    if (year) conditions.push(eq(previousYearPapersTable.examYear, parseInt(year)));
+    if (year) conditions.push(eq(previousYearPapersTable.examYear, parseInt(String(year))));
     if (search) conditions.push(or(
       ilike(previousYearPapersTable.title, `%${search}%`),
       ilike(previousYearPapersTable.examName, `%${search}%`),
@@ -285,7 +285,7 @@ router.get("/previous-papers", authenticate, async (req, res) => {
 // Student: Get paper detail
 router.get("/previous-papers/:id", authenticate, async (req, res) => {
   try {
-    const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, parseInt(req.params.id))).limit(1);
+    const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, parseInt(String(req.params.id)))).limit(1);
     if (!paper) { res.status(404).json({ error: "Not found" }); return; }
     res.json(paper);
   } catch (err) {
@@ -297,7 +297,7 @@ router.get("/previous-papers/:id", authenticate, async (req, res) => {
 // Student: View/Download paper file
 router.get("/previous-papers/:id/file", authenticate, async (req, res) => {
   try {
-    const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, parseInt(req.params.id))).limit(1);
+    const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, parseInt(String(req.params.id)))).limit(1);
     if (!paper?.filePath) { res.status(404).json({ error: "File not found" }); return; }
     const absPath = path.resolve(process.cwd(), paper.filePath);
     if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing" }); return; }
