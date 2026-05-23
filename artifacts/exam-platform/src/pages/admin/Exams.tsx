@@ -61,7 +61,17 @@ export function AdminExams() {
           queryClient.invalidateQueries({ queryKey: getGetExamsQueryKey() });
           setIsCreateOpen(false);
           toast({ title: "Exam created successfully" });
-          setNewExam({ title: "", description: "", examType: "SSC", duration: 60, totalMarks: 100, negativeMarks: 0.25 });
+          setNewExam({
+                    title: "",
+                    description: "",
+                    examType: "SSC",
+                    duration: 60,
+                    totalMarks: 100,
+                    negativeMarks: 0.25,
+                    isTopicMock: false,
+                    subjectName: "",
+                    topicName: "",
+                  });
         },
         onError: (err) => {
           toast({ title: "Failed to create exam", description: err.message, variant: "destructive" });
