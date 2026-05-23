@@ -6,26 +6,47 @@ import { db, resourcesTable, previousYearPapersTable } from "@workspace/db";
 import { eq, ilike, or, and } from "drizzle-orm";
 import { authenticate, requireAdmin } from "../middlewares/auth";
 import { logger } from "../lib/logger";
+import cloudinary from "../lib/cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
 const router = Router();
 
-const uploadsDir = path.resolve(process.cwd(), "uploads");
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+// const uploadsDir = path.resolve(process.cwd(), "uploads");
+// if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-const storage = multer.diskStorage({
-  destination(req, _file, cb) {
-    const subDir = req.path.includes("previous-papers") ? "papers" : "resources";
-    const dir = path.join(uploadsDir, subDir);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename(_req, file, cb) {
-    const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    cb(null, `${unique}-${file.originalname}`);
+// const storage = multer.diskStorage({
+//   destination(req, _file, cb) {
+//     const subDir = req.path.includes("previous-papers") ? "papers" : "resources";
+//     const dir = path.join(uploadsDir, subDir);
+//     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+//     cb(null, dir);
+//   },
+//   filename(_req, file, cb) {
+//     const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+//     cb(null, `${unique}-${file.originalname}`);
+//   },
+// });
+
+// const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const folder = req.path.includes("previous-papers")
+      ? "previous-papers"
+      : "resources";
+
+    return {
+      folder: `myportal/${folder}`,
+      resource_type: "raw",
+      public_id: `${Date.now()}-${file.originalname}`,
+    };
   },
 });
 
-const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
+const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+});
 
 // ── RESOURCES ────────────────────────────────────────────────────────────────
 
@@ -54,7 +75,8 @@ router.post("/admin/resources/upload", authenticate, requireAdmin, upload.single
       description: description || null,
       fileName: req.file?.originalname || null,
       fileType,
-      filePath: req.file ? path.relative(process.cwd(), req.file.path) : null,
+      // filePath: req.file ? path.relative(process.cwd(), req.file.path) : null,
+      filePath: (req.file as any)?.path || null,
       fileSize: req.file?.size || null,
       tags: tags || null,
       uploadedBy: req.user!.id,
@@ -92,9 +114,9 @@ router.delete("/admin/resources/:id", authenticate, requireAdmin, async (req, re
   try {
     const id = parseInt(String(req.params.id));
     const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, id)).limit(1);
-    if (resource?.filePath) {
-      try { fs.unlinkSync(path.resolve(process.cwd(), resource.filePath)); } catch {}
-    }
+    // if (resource?.filePath) {
+    //   try { fs.unlinkSync(path.resolve(process.cwd(), resource.filePath)); } catch {}
+    // }
     await db.delete(resourcesTable).where(eq(resourcesTable.id, id));
     res.status(204).send();
   } catch (err) {
@@ -140,18 +162,45 @@ router.get("/resources/:id", authenticate, async (req, res) => {
 });
 
 // Student: View / Download resource file
+// router.get("/resources/:id/file", authenticate, async (req, res) => {
+//   try {
+//     const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
+//     if (!resource?.filePath) { res.status(404).json({ error: "File not found" }); return; }
+//     const absPath = path.resolve(process.cwd(), resource.filePath);
+//     if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing on server" }); return; }
+//     const download = req.query.download === "1";
+//     if (download) {
+//       res.download(absPath, resource.fileName || "file");
+//     } else {
+//       res.sendFile(absPath);
+//     }
+//   } catch (err) {
+//     logger.error({ err });
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
 router.get("/resources/:id/file", authenticate, async (req, res) => {
   try {
-    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
-    if (!resource?.filePath) { res.status(404).json({ error: "File not found" }); return; }
-    const absPath = path.resolve(process.cwd(), resource.filePath);
-    if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing on server" }); return; }
-    const download = req.query.download === "1";
-    if (download) {
-      res.download(absPath, resource.fileName || "file");
-    } else {
-      res.sendFile(absPath);
+    const [resource] = await db
+      .select()
+      .from(resourcesTable)
+      .where(eq(resourcesTable.id, parseInt(String(req.params.id))))
+      .limit(1);
+
+    if (!resource?.filePath) {
+      res.status(404).json({ error: "File not found" });
+      return;
     }
+
+    const download = req.query.download === "1";
+
+    if (download) {
+      return res.redirect(resource.filePath);
+    }
+
+    return res.redirect(resource.filePath);
+
   } catch (err) {
     logger.error({ err });
     res.status(500).json({ error: "Internal server error" });
@@ -159,28 +208,28 @@ router.get("/resources/:id/file", authenticate, async (req, res) => {
 });
 
 // Student: Get TXT/DOCX content as text
-router.get("/resources/:id/content", authenticate, async (req, res) => {
-  try {
-    const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
-    if (!resource?.filePath) { res.status(404).json({ error: "No file" }); return; }
-    const absPath = path.resolve(process.cwd(), resource.filePath);
-    if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing" }); return; }
+// router.get("/resources/:id/content", authenticate, async (req, res) => {
+//   try {
+//     const [resource] = await db.select().from(resourcesTable).where(eq(resourcesTable.id, parseInt(String(req.params.id)))).limit(1);
+//     if (!resource?.filePath) { res.status(404).json({ error: "No file" }); return; }
+//     const absPath = path.resolve(process.cwd(), resource.filePath);
+//     if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing" }); return; }
 
-    if (resource.fileType === "txt") {
-      const text = fs.readFileSync(absPath, "utf-8");
-      res.json({ content: text, type: "text" });
-    } else if (resource.fileType === "docx") {
-      const mammoth = await import("mammoth");
-      const result = await mammoth.convertToHtml({ path: absPath });
-      res.json({ content: result.value, type: "html" });
-    } else {
-      res.status(400).json({ error: "Use /file endpoint for PDFs" });
-    }
-  } catch (err) {
-    logger.error({ err });
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     if (resource.fileType === "txt") {
+//       const text = fs.readFileSync(absPath, "utf-8");
+//       res.json({ content: text, type: "text" });
+//     } else if (resource.fileType === "docx") {
+//       const mammoth = await import("mammoth");
+//       const result = await mammoth.convertToHtml({ path: absPath });
+//       res.json({ content: result.value, type: "html" });
+//     } else {
+//       res.status(400).json({ error: "Use /file endpoint for PDFs" });
+//     }
+//   } catch (err) {
+//     logger.error({ err });
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 // ── PREVIOUS YEAR PAPERS ─────────────────────────────────────────────────────
 
@@ -211,7 +260,8 @@ router.post("/admin/previous-papers/upload", authenticate, requireAdmin, upload.
       description: description || null,
       fileName: req.file?.originalname || null,
       fileType,
-      filePath: req.file ? path.relative(process.cwd(), req.file.path) : null,
+      // filePath: req.file ? path.relative(process.cwd(), req.file.path) : null,
+      filePath: (req.file as any)?.path || null,
       fileSize: req.file?.size || null,
       uploadedBy: req.user!.id,
     }).returning();
@@ -249,9 +299,9 @@ router.delete("/admin/previous-papers/:id", authenticate, requireAdmin, async (r
   try {
     const id = parseInt(String(req.params.id));
     const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, id)).limit(1);
-    if (paper?.filePath) {
-      try { fs.unlinkSync(path.resolve(process.cwd(), paper.filePath)); } catch {}
-    }
+    // if (paper?.filePath) {
+    //   try { fs.unlinkSync(path.resolve(process.cwd(), paper.filePath)); } catch {}
+    // }
     await db.delete(previousYearPapersTable).where(eq(previousYearPapersTable.id, id));
     res.status(204).send();
   } catch (err) {
@@ -295,18 +345,44 @@ router.get("/previous-papers/:id", authenticate, async (req, res) => {
 });
 
 // Student: View/Download paper file
+// router.get("/previous-papers/:id/file", authenticate, async (req, res) => {
+//   try {
+//     const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, parseInt(String(req.params.id)))).limit(1);
+//     if (!paper?.filePath) { res.status(404).json({ error: "File not found" }); return; }
+//     const absPath = path.resolve(process.cwd(), paper.filePath);
+//     if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing" }); return; }
+//     const download = req.query.download === "1";
+//     if (download) {
+//       res.download(absPath, paper.fileName || "paper");
+//     } else {
+//       res.sendFile(absPath);
+//     }
+//   } catch (err) {
+//     logger.error({ err });
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 router.get("/previous-papers/:id/file", authenticate, async (req, res) => {
   try {
-    const [paper] = await db.select().from(previousYearPapersTable).where(eq(previousYearPapersTable.id, parseInt(String(req.params.id)))).limit(1);
-    if (!paper?.filePath) { res.status(404).json({ error: "File not found" }); return; }
-    const absPath = path.resolve(process.cwd(), paper.filePath);
-    if (!fs.existsSync(absPath)) { res.status(404).json({ error: "File missing" }); return; }
-    const download = req.query.download === "1";
-    if (download) {
-      res.download(absPath, paper.fileName || "paper");
-    } else {
-      res.sendFile(absPath);
+    const [paper] = await db
+      .select()
+      .from(previousYearPapersTable)
+      .where(eq(previousYearPapersTable.id, parseInt(String(req.params.id))))
+      .limit(1);
+
+    if (!paper?.filePath) {
+      res.status(404).json({ error: "File not found" });
+      return;
     }
+
+    const download = req.query.download === "1";
+
+    if (download) {
+      return res.redirect(paper.filePath);
+    }
+
+    return res.redirect(paper.filePath);
+
   } catch (err) {
     logger.error({ err });
     res.status(500).json({ error: "Internal server error" });
