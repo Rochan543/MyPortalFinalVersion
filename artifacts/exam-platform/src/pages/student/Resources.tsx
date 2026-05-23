@@ -88,26 +88,41 @@ export default function Resources() {
     setViewContent(null);
     setPdfBlobUrl(null);
 
+    // if (resource.fileType === "pdf") {
+    //   // Fetch PDF with auth token and create a blob URL for the iframe
+    //   setViewLoading(true);
+    //   try {
+    //     const res = await fetch(`${apiBase}/resources/${resource.id}/file`, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     });
+    //     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    //     const blob = await res.blob();
+    //     // Revoke any previous blob URL
+    //     if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    //     const url = URL.createObjectURL(blob);
+    //     blobUrlRef.current = url;
+    //     setPdfBlobUrl(url);
+    //   } catch (err) {
+    //     toast({ title: "Could not load PDF", description: "Please try downloading instead.", variant: "destructive" });
+    //   } finally {
+    //     setViewLoading(false);
+    //   }
+    // }
     if (resource.fileType === "pdf") {
-      // Fetch PDF with auth token and create a blob URL for the iframe
-      setViewLoading(true);
-      try {
-        const res = await fetch(`${apiBase}/resources/${resource.id}/file`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        // Revoke any previous blob URL
-        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-        setPdfBlobUrl(url);
-      } catch (err) {
-        toast({ title: "Could not load PDF", description: "Please try downloading instead.", variant: "destructive" });
-      } finally {
-        setViewLoading(false);
-      }
-    } else if (resource.fileType === "txt" || resource.fileType === "docx") {
+  setViewLoading(true);
+
+  try {
+    setPdfBlobUrl(resource.filePath || null);
+  } catch {
+    toast({
+      title: "Could not load PDF",
+      description: "Please try downloading instead.",
+      variant: "destructive",
+    });
+  } finally {
+    setViewLoading(false);
+  }
+} else if (resource.fileType === "txt" || resource.fileType === "docx") {
       setViewLoading(true);
       try {
         const res = await fetch(`${apiBase}/resources/${resource.id}/content`, {
@@ -123,28 +138,33 @@ export default function Resources() {
     }
   }
 
+  // function downloadResource(resource: Resource) {
+  //   setViewLoading(true);
+  //   fetch(`${apiBase}/resources/${resource.id}/file?download=1`, {
+  //     headers: { Authorization: `Bearer ${token}` },
+  //   })
+  //     .then(r => {
+  //       if (!r.ok) throw new Error();
+  //       return r.blob();
+  //     })
+  //     .then(blob => {
+  //       const url = URL.createObjectURL(blob);
+  //       const a = document.createElement("a");
+  //       a.href = url;
+  //       a.download = resource.fileName || "resource";
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       document.body.removeChild(a);
+  //       URL.revokeObjectURL(url);
+  //     })
+  //     .catch(() => toast({ title: "Download failed", variant: "destructive" }))
+  //     .finally(() => setViewLoading(false));
+  // }
   function downloadResource(resource: Resource) {
-    setViewLoading(true);
-    fetch(`${apiBase}/resources/${resource.id}/file?download=1`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => {
-        if (!r.ok) throw new Error();
-        return r.blob();
-      })
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = resource.fileName || "resource";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      })
-      .catch(() => toast({ title: "Download failed", variant: "destructive" }))
-      .finally(() => setViewLoading(false));
-  }
+  if (!resource.filePath) return;
+
+  window.open(resource.filePath, "_blank");
+}
 
   const subjects = [...new Set(resources.map(r => r.subjectName).filter(Boolean))] as string[];
   const filtered = resources.filter(r => {
@@ -290,8 +310,13 @@ export default function Resources() {
               </div>
             ) : viewing?.fileType === "pdf" && pdfBlobUrl ? (
               /* PDF: use authenticated blob URL — no auth header needed in iframe */
+              // <iframe
+              //   src={pdfBlobUrl}
+              //   className="w-full h-[60vh] border rounded bg-muted"
+              //   title={viewing?.title || "PDF Viewer"}
+              // />
               <iframe
-                src={pdfBlobUrl}
+                src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfBlobUrl)}`}
                 className="w-full h-[60vh] border rounded bg-muted"
                 title={viewing?.title || "PDF Viewer"}
               />

@@ -87,47 +87,68 @@ export default function PreviousPapers() {
     setViewing(paper);
     setPdfBlobUrl(null);
 
+    // if (paper.fileType === "pdf") {
+    //   // Fetch PDF blob with auth header, then create a blob:// URL for the iframe
+    //   setPdfLoading(true);
+    //   try {
+    //     const res = await fetch(`${apiBase}/previous-papers/${paper.id}/file`, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     });
+    //     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    //     const blob = await res.blob();
+    //     if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    //     const url = URL.createObjectURL(blob);
+    //     blobUrlRef.current = url;
+    //     setPdfBlobUrl(url);
+    //   } catch {
+    //     toast({ title: "Could not load PDF", description: "Try downloading instead.", variant: "destructive" });
+    //   } finally {
+    //     setPdfLoading(false);
+    //   }
+    // }
     if (paper.fileType === "pdf") {
-      // Fetch PDF blob with auth header, then create a blob:// URL for the iframe
-      setPdfLoading(true);
-      try {
-        const res = await fetch(`${apiBase}/previous-papers/${paper.id}/file`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-        setPdfBlobUrl(url);
-      } catch {
-        toast({ title: "Could not load PDF", description: "Try downloading instead.", variant: "destructive" });
-      } finally {
-        setPdfLoading(false);
-      }
-    }
+  setPdfLoading(true);
+
+  try {
+    setPdfBlobUrl(paper.filePath || null);
+  } catch {
+    toast({
+      title: "Could not load PDF",
+      description: "Try downloading instead.",
+      variant: "destructive",
+    });
+  } finally {
+    setPdfLoading(false);
+  }
+}
   }
 
+  // function downloadPaper(paper: Paper) {
+  //   fetch(`${apiBase}/previous-papers/${paper.id}/file?download=1`, {
+  //     headers: { Authorization: `Bearer ${token}` },
+  //   })
+  //     .then(r => {
+  //       if (!r.ok) throw new Error();
+  //       return r.blob();
+  //     })
+  //     .then(blob => {
+  //       const url = URL.createObjectURL(blob);
+  //       const a = document.createElement("a");
+  //       a.href = url;
+  //       a.download = paper.fileName || "paper";
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       document.body.removeChild(a);
+  //       URL.revokeObjectURL(url);
+  //     })
+  //     .catch(() => toast({ title: "Download failed", variant: "destructive" }));
+  // }
+
   function downloadPaper(paper: Paper) {
-    fetch(`${apiBase}/previous-papers/${paper.id}/file?download=1`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => {
-        if (!r.ok) throw new Error();
-        return r.blob();
-      })
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = paper.fileName || "paper";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      })
-      .catch(() => toast({ title: "Download failed", variant: "destructive" }));
-  }
+  if (!paper.filePath) return;
+
+  window.open(paper.filePath, "_blank");
+}
 
   const examNames = [...new Set(papers.map(p => p.examName).filter(Boolean))] as string[];
   const years = [...new Set(papers.map(p => p.examYear).filter(Boolean))].sort((a, b) => b! - a!) as number[];
@@ -294,11 +315,17 @@ export default function PreviousPapers() {
               </div>
             ) : viewing?.fileType === "pdf" && pdfBlobUrl ? (
               /* blob:// URL carries the file data — no auth header needed in iframe */
+              // <iframe
+              //   src={pdfBlobUrl}
+              //   className="w-full h-[70vh] border rounded bg-muted"
+              //   title={viewing?.title || "PDF Viewer"}
+              // />
+
               <iframe
-                src={pdfBlobUrl}
-                className="w-full h-[70vh] border rounded bg-muted"
-                title={viewing?.title || "PDF Viewer"}
-              />
+              src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfBlobUrl)}`}
+              className="w-full h-[70vh] border rounded bg-muted"
+              title={viewing?.title || "PDF Viewer"}
+            />
             ) : viewing?.fileType === "pdf" && !pdfBlobUrl ? (
               <div className="flex flex-col items-center justify-center h-[70vh] gap-3 text-muted-foreground">
                 <FileText className="h-12 w-12" />
