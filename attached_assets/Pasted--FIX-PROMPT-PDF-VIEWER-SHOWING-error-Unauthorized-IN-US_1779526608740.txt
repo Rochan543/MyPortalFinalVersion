@@ -1,0 +1,236 @@
+# FIX PROMPT — PDF VIEWER SHOWING `{"error":"Unauthorized"}` IN USER PANEL
+
+DO NOT MODIFY EXISTING WORKING FEATURES, UI, AUTHENTICATION FLOW, DATABASE STRUCTURE, OR CURRENT EXAM MODULES.
+
+ONLY FIX THE PDF VIEWER AUTHORIZATION ISSUE INSIDE THE EXISTING REACT + NODE.JS + POSTGRESQL APPLICATION.
+
+Current behavior:
+
+* Admin uploads PDF successfully
+* PDF reflects correctly in user panel
+* Resource/Previous Paper listing works correctly
+* BUT when user clicks VIEW PDF, it shows:
+
+```json id="6yb3gz"
+{"error":"Unauthorized"}
+```
+
+Fix ONLY this issue.
+
+DO NOT disturb any other code or functionality.
+
+---
+
+# PROBLEM ANALYSIS
+
+The uploaded PDF exists correctly in backend storage.
+
+The issue occurs because:
+
+* PDF/file viewer API is protected incorrectly
+* OR JWT token is not passed while opening/viewing file
+* OR static file serving is blocked by auth middleware
+* OR frontend viewer request is missing authorization headers
+
+---
+
+# REQUIRED FIX
+
+Fix file viewing access so that:
+
+* Logged-in users can VIEW PDFs
+* Logged-in users can DOWNLOAD PDFs
+* Admin uploads remain unchanged
+* Existing authentication remains unchanged
+* Existing routes remain unchanged as much as possible
+
+---
+
+# IMPORTANT RULES
+
+DO NOT:
+
+* Rewrite authentication system
+* Change login flow
+* Change JWT generation
+* Change database schema unnecessarily
+* Change existing APIs unnecessarily
+* Break admin upload functionality
+* Modify unrelated components
+* Redesign UI
+
+ONLY:
+
+* Fix authorization for file viewing
+* Fix token passing
+* Fix static file access
+* Ensure secure authenticated file rendering
+
+---
+
+# REQUIRED FUNCTIONALITY
+
+When user clicks:
+
+```text id="r7v0bi"
+View PDF
+```
+
+The system should:
+
+* Open full PDF properly
+* Render all pages
+* Allow scrolling
+* Allow zoom
+* Allow download
+
+WITHOUT showing:
+
+```json id="0y2n5m"
+{"error":"Unauthorized"}
+```
+
+---
+
+# BACKEND FIX REQUIREMENTS
+
+Check and fix:
+
+## 1. Static File Middleware
+
+Ensure uploaded files directory is properly exposed:
+
+Example:
+
+```js id="fwg2yb"
+app.use('/uploads', express.static(uploadPath));
+```
+
+OR secure middleware version with JWT validation.
+
+---
+
+# 2. JWT Protected File Access
+
+If files are protected:
+
+Ensure:
+
+* token is verified correctly
+* authenticated users can access resources
+* authorization middleware does NOT block valid users
+
+---
+
+# 3. File Response Headers
+
+Ensure backend returns:
+
+```js id="0x2h8z"
+Content-Type: application/pdf
+```
+
+and proper file streaming.
+
+---
+
+# FRONTEND FIX REQUIREMENTS
+
+Ensure PDF viewer sends:
+
+```js id="9t0f1z"
+Authorization: Bearer <token>
+```
+
+when requesting:
+
+* PDFs
+* DOCX files
+* TXT files
+
+---
+
+# TOKEN HANDLING FIX
+
+Frontend should:
+
+* fetch token from auth storage
+* attach token automatically in axios/fetch
+* pass token while opening viewer modal/page
+
+---
+
+# PDF VIEWER FIX
+
+Ensure:
+
+* react-pdf/pdf.js viewer works properly
+* protected file URLs work correctly
+* viewer does not fail on authenticated routes
+
+---
+
+# DOWNLOAD FIX
+
+When user clicks download:
+
+* authenticated download should work
+* file should download correctly
+* no unauthorized error
+
+---
+
+# SECURITY REQUIREMENT
+
+Files should:
+
+* remain protected from public anonymous access
+* be accessible ONLY to logged-in users
+
+---
+
+# TEST CASES
+
+## MUST WORK
+
+### Admin
+
+* Upload PDF
+* Upload DOCX
+* Upload TXT
+
+### Student/User
+
+* View uploaded PDF
+* Download uploaded PDF
+* View previous year papers
+* View resources
+* Download files
+
+---
+
+# MUST NOT BREAK
+
+DO NOT BREAK:
+
+* Existing exams
+* Existing topic mocks
+* Existing timers
+* Existing auth
+* Existing admin panel
+* Existing upload system
+* Existing APIs
+
+---
+
+# REQUIRED OUTPUT
+
+Generate ONLY:
+
+* File authorization fix
+* Secure file viewing fix
+* Secure file download fix
+* JWT token pass fix
+* PDF viewer authenticated access fix
+
+WITHOUT modifying unrelated code or functionality.

@@ -1,0 +1,639 @@
+# FEATURE FIX & NEW MODULE ADDITION PROMPT
+
+DO NOT MODIFY EXISTING WORKING FEATURES, AUTHENTICATION, DATABASE FLOW, OR UI STRUCTURE.
+
+ONLY FIX AND EXTEND THE FOLLOWING FEATURES CLEANLY INSIDE THE EXISTING REACT + NODE.JS + POSTGRESQL EXAM PLATFORM.
+
+---
+
+# FEATURE 1 — FIX TOPIC MOCK QUESTION PARSING
+
+Currently topic mock questions are getting truncated.
+
+Problem:
+
+* Half question is showing
+* Paragraph questions are getting cut
+* Multi-line questions are not rendering properly
+* Long comprehension passages are incomplete
+
+This must be fixed completely.
+
+---
+
+# REQUIRED FIX
+
+When admin uploads:
+
+* TXT
+* DOCX
+* PDF
+
+The parser MUST extract:
+
+* FULL QUESTION TEXT
+* FULL PARAGRAPHS
+* MULTI-LINE QUESTIONS
+* COMPLETE COMPREHENSION PASSAGES
+* COMPLETE OPTIONS
+* COMPLETE EXPLANATIONS
+
+---
+
+# PARAGRAPH SUPPORT
+
+Support questions like:
+
+```text id="a4r2qz"
+Read the following passage carefully and answer the questions:
+
+Ravi started from Delhi towards Mumbai...
+(large paragraph continues...)
+
+Q1. What is Ravi's destination?
+A. Chennai
+B. Mumbai
+C. Kolkata
+D. Pune
+```
+
+The FULL paragraph must render properly without truncation.
+
+---
+
+# DATABASE REQUIREMENT
+
+Use:
+
+* TEXT type for all long content fields
+* Do NOT use VARCHAR for question paragraphs
+
+Ensure these fields support unlimited length:
+
+```sql id="0u8e8m"
+question_text TEXT
+explanation TEXT
+paragraph_text TEXT
+```
+
+---
+
+# FRONTEND RENDERING FIX
+
+Question UI must:
+
+* Preserve line breaks
+* Preserve formatting
+* Preserve paragraphs
+* Support long content
+* Support scrollable question containers
+
+Use:
+
+```css id="m1xk9w"
+white-space: pre-wrap;
+word-break: break-word;
+```
+
+---
+
+# FILE PARSING FIXES
+
+## TXT Parsing
+
+Preserve:
+
+* line breaks
+* spacing
+* paragraphs
+
+## DOCX Parsing
+
+Use:
+
+* mammoth
+* preserve formatting
+* preserve paragraph structure
+
+## PDF Parsing
+
+Use:
+
+* pdf-parse
+* merge broken lines correctly
+* preserve long paragraphs
+
+---
+
+# QUESTION STORAGE FORMAT
+
+Store complete object:
+
+```json id="k0v9mc"
+{
+  "paragraph": "Complete paragraph...",
+  "question": "Complete question...",
+  "options": {
+    "A": "...",
+    "B": "...",
+    "C": "...",
+    "D": "..."
+  },
+  "explanation": "Complete explanation..."
+}
+```
+
+---
+
+# FEATURE 2 — STRICT TAB SWITCH & SCREEN MONITORING FIX
+
+Current tab switching detection is not working properly.
+
+Fix the entire anti-cheating monitoring system.
+
+---
+
+# STRICT EXAM SECURITY REQUIREMENTS
+
+Apply ONLY for:
+
+* Final Exams
+* Real Mock Tests
+* Full-Length Exams
+
+NOT for topic mocks.
+
+---
+
+# DETECT THESE EVENTS
+
+Monitor:
+
+* Tab switching
+* Window minimize
+* Browser blur
+* Fullscreen exit
+* Window change
+* App switching
+
+Use:
+
+```js id="w0hzsq"
+visibilitychange
+blur
+focus
+fullscreenchange
+mouseleave
+```
+
+---
+
+# FIRST VIOLATION
+
+If user:
+
+* changes tab
+* minimizes screen
+* exits fullscreen
+
+Show warning modal:
+
+```text id="7kwz5y"
+Warning:
+Exam rule violation detected.
+If you leave the exam screen again, your exam will be automatically submitted.
+```
+
+Store:
+
+```text id="e4g61x"
+violation_count = 1
+```
+
+---
+
+# SECOND VIOLATION
+
+Immediately:
+
+* Auto submit exam
+* Lock exam screen
+* Save answers
+* Store submission reason
+
+Show:
+
+```text id="v8bq8m"
+Exam automatically submitted due to multiple violations.
+```
+
+Store:
+
+```text id="j52i1v"
+violation_count = 2
+auto_submitted = true
+```
+
+---
+
+# FULLSCREEN MODE
+
+When real exam starts:
+
+Automatically:
+
+* Enable fullscreen
+* Prevent fullscreen exit
+* Re-request fullscreen if exited
+
+---
+
+# DISABLE THESE ACTIONS
+
+During real exams disable:
+
+* Right click
+* Copy
+* Paste
+* Text selection
+* F12
+* Ctrl+Shift+I
+* Ctrl+U
+* Ctrl+T
+* Ctrl+W
+* Alt+Tab detection attempt
+
+---
+
+# SECURITY LOGGING
+
+Track:
+
+* violation timestamp
+* violation type
+* exam id
+* user id
+
+---
+
+# FEATURE 3 — RESOURCES MODULE
+
+Add a completely new module called:
+
+# "Resources"
+
+Available in:
+
+* Admin Panel
+* Student Panel
+
+---
+
+# ADMIN RESOURCE MANAGEMENT
+
+Admin can upload:
+
+* PDFs
+* TXT files
+* DOCX files
+* Notes
+* Formula sheets
+* Study materials
+
+---
+
+# RESOURCE STRUCTURE
+
+Each resource contains:
+
+* Subject Name
+* Topic Name
+* Resource Title
+* Description
+* File Type
+* Upload File
+* Tags
+* Uploaded Date
+
+---
+
+# EXAMPLE
+
+```text id="zyr3cc"
+Subject: Quantitative Aptitude
+Topic: Percentage
+Title: Percentage Formula Notes
+File: percentage-formulas.pdf
+```
+
+---
+
+# STUDENT RESOURCE PANEL
+
+Students can:
+
+* View resources
+* Search resources
+* Filter by subject/topic
+* Open PDFs
+* Read TXT files
+* Read DOCX files
+* Download files
+
+---
+
+# FILE VIEWING REQUIREMENTS
+
+## PDF
+
+Students must:
+
+* View entire PDF inside platform
+* Scroll pages smoothly
+* Zoom in/out
+* Download PDF
+
+Use:
+
+* react-pdf OR pdf.js viewer
+
+---
+
+## TXT
+
+Students should:
+
+* View formatted text
+* Preserve formatting
+* Download TXT
+
+---
+
+## DOCX
+
+Students should:
+
+* Read entire DOCX content
+* Preserve formatting
+* Download DOCX
+
+---
+
+# RESOURCE DATABASE TABLE
+
+```sql id="1tz3po"
+CREATE TABLE resources (
+  id SERIAL PRIMARY KEY,
+  subject_name VARCHAR(100),
+  topic_name VARCHAR(100),
+  title VARCHAR(255),
+  description TEXT,
+  file_name TEXT,
+  file_type VARCHAR(20),
+  file_url TEXT,
+  uploaded_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+# RESOURCE APIs
+
+## Admin APIs
+
+```text id="d3d7vi"
+POST /admin/resources/upload
+PUT /admin/resources/edit
+DELETE /admin/resources/delete
+GET /admin/resources/list
+```
+
+---
+
+## Student APIs
+
+```text id="r62z2s"
+GET /resources
+GET /resources/:id
+GET /resources/download/:id
+```
+
+---
+
+# FEATURE 4 — PREVIOUS YEAR QUESTION PAPERS MODULE
+
+Add another new module:
+
+# "Previous Year Papers"
+
+Available in:
+
+* Admin Panel
+* Student Panel
+
+---
+
+# ADMIN FEATURES
+
+Admin can upload:
+
+* SSC previous papers
+* Banking papers
+* RRB papers
+* UPSC papers
+
+Supported formats:
+
+* PDF
+* DOCX
+* TXT
+
+---
+
+# PAPER STRUCTURE
+
+Each paper contains:
+
+* Exam Name
+* Year
+* Shift
+* Subject
+* Paper File
+* Description
+
+---
+
+# EXAMPLE
+
+```text id="s70pfv"
+Exam: SSC CGL
+Year: 2024
+Shift: Shift 2
+File: ssc-cgl-2024-shift2.pdf
+```
+
+---
+
+# STUDENT FEATURES
+
+Students can:
+
+* View papers
+* Search papers
+* Filter by year/exam
+* Open full papers
+* Download papers
+
+---
+
+# PDF VIEWING REQUIREMENTS
+
+Inside student panel:
+
+* Open entire PDF
+* Smooth scrolling
+* Page navigation
+* Zoom support
+* Download option
+
+---
+
+# PREVIOUS PAPERS TABLE
+
+```sql id="7teoc6"
+CREATE TABLE previous_year_papers (
+  id SERIAL PRIMARY KEY,
+  exam_name VARCHAR(100),
+  exam_year INTEGER,
+  shift_name VARCHAR(50),
+  subject_name VARCHAR(100),
+  title VARCHAR(255),
+  description TEXT,
+  file_url TEXT,
+  file_type VARCHAR(20),
+  uploaded_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+# PREVIOUS PAPER APIs
+
+## Admin APIs
+
+```text id="qzk91f"
+POST /admin/previous-papers/upload
+PUT /admin/previous-papers/edit
+DELETE /admin/previous-papers/delete
+GET /admin/previous-papers/list
+```
+
+---
+
+## Student APIs
+
+```text id="1r0v9f"
+GET /previous-papers
+GET /previous-papers/:id
+GET /previous-papers/download/:id
+```
+
+---
+
+# FILE STORAGE REQUIREMENTS
+
+Support:
+
+* local uploads
+* future AWS S3 compatibility
+
+Store:
+
+* original filename
+* file path
+* mime type
+* file size
+
+---
+
+# UI REQUIREMENTS
+
+DO NOT redesign the platform.
+
+Use:
+
+* existing sidebar
+* existing cards
+* existing layouts
+* existing theme
+
+Add only:
+
+* Resources tab
+* Previous Year Papers tab
+
+---
+
+# REQUIRED FRONTEND PAGES
+
+## Student Side
+
+* Resources Listing
+* Resource Viewer
+* Previous Papers Listing
+* Previous Paper Viewer
+
+## Admin Side
+
+* Upload Resources
+* Manage Resources
+* Upload Previous Papers
+* Manage Previous Papers
+
+---
+
+# REQUIRED PACKAGES
+
+```bash id="9k3z91"
+npm install mammoth react-pdf pdfjs-dist
+```
+
+---
+
+# IMPORTANT RULES
+
+DO NOT:
+
+* Break existing exam flow
+* Rewrite authentication
+* Modify current UI structure heavily
+* Change existing APIs unnecessarily
+
+ONLY:
+
+* Extend functionality
+* Fix parsing
+* Improve security monitoring
+* Add new modules cleanly
+* Reuse existing architecture/components
+
+---
+
+# FINAL EXPECTED OUTPUT
+
+Generate:
+
+* Fixed full question parsing system
+* Paragraph/comprehension support
+* Strict anti-tab switching system
+* Fullscreen exam monitoring
+* Resources module
+* PDF/TXT/DOCX viewer support
+* Previous year papers module
+* File upload system
+* Student download system
+* New PostgreSQL tables
+* New REST APIs
+* Responsive UI integration compatible with existing project

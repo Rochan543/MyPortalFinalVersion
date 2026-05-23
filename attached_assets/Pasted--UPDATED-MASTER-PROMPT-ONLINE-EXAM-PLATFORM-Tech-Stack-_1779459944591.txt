@@ -1,0 +1,620 @@
+# UPDATED MASTER PROMPT — ONLINE EXAM PLATFORM
+
+## Tech Stack: React + Node.js + PostgreSQL
+
+Build a production-ready Online Competitive Exam Platform using:
+
+* Frontend: React.js + Tailwind CSS ONLY
+* Backend: Node.js + Express.js ONLY
+* Database: PostgreSQL ONLY
+* Authentication: Password-based Login ONLY
+* Admin Authentication: Role-Based Admin Login
+* PDF Upload System for Questions
+* Auto Question Extraction from PDFs
+* Timer-Based Exams
+* Result & Analytics System
+* Explanation System for Wrong Answers
+* Mobile Responsive Design
+
+The platform should support:
+
+* SSC
+* RRB
+* Banking Exams
+* UPSC
+* State Exams
+* Railway Exams
+* Defence Exams
+* Technical Exams
+* Mock Tests
+* Previous Year Papers
+
+---
+
+# IMPORTANT REQUIREMENTS
+
+DO NOT INCLUDE:
+
+* Email Verification
+* OTP Login
+* Social Login
+* Forgot Password via Email
+* Phone Verification
+
+ONLY USE:
+
+* Username/Password Login
+* JWT Authentication
+* Role-based Admin Access
+
+---
+
+# USER ROLES
+
+## 1. STUDENT ROLE
+
+Students can:
+
+* Register
+* Login
+* Attempt Exams
+* View Results
+* See Wrong Answer Explanations
+* Track Performance
+* View Previous Attempts
+* Bookmark Questions
+
+---
+
+## 2. ADMIN ROLE
+
+Admins can:
+
+* Login Securely
+* Upload PDFs
+* Create Exams
+* Edit Questions
+* Publish Exams
+* Monitor Users
+* View Analytics
+* Manage Tests
+
+Only users with role = ADMIN can access admin routes.
+
+---
+
+# AUTHENTICATION SYSTEM
+
+## Requirements
+
+* JWT Token Authentication
+* Password Hashing using bcrypt
+* Role-based middleware
+* Protected Routes
+* Session Persistence
+
+---
+
+# ADMIN PANEL FEATURES
+
+## Dashboard
+
+Show:
+
+* Total Users
+* Total Exams
+* Total Questions
+* Active Exams
+* Total Attempts
+* Daily Users
+
+---
+
+# PDF UPLOAD MODULE
+
+Admin uploads:
+
+* Previous Year Papers
+* Mock Tests
+* Section-wise PDFs
+
+Supported formats:
+
+* English PDFs
+* Hindi PDFs
+* Mixed PDFs
+
+---
+
+# PDF EXTRACTION ENGINE
+
+After PDF upload:
+
+## System Should:
+
+1. Read PDF
+2. Extract Questions
+3. Detect:
+
+   * Question
+   * Options
+   * Correct Answer
+   * Explanation
+   * Section
+4. Store in PostgreSQL
+5. Create Exam Automatically
+
+---
+
+# QUESTION TYPES
+
+Support:
+
+* MCQs
+* Numerical Questions
+* True/False
+* Assertion & Reason
+
+---
+
+# EXAM ENGINE
+
+## Exam Features
+
+### Timer Features
+
+* Overall Exam Timer
+* Section-wise Timer
+* Auto Submit on Timeout
+* Countdown Timer
+* Timer Persistence
+
+---
+
+# SECTION BASED EXAMS
+
+Example Sections:
+
+* Quantitative Aptitude
+* Reasoning
+* English
+* General Awareness
+* Computer Knowledge
+
+Each section has:
+
+* Separate Timer
+* Separate Questions
+* Separate Analytics
+
+---
+
+# EXAM INTERFACE
+
+## Features
+
+* Next/Previous Question
+* Mark for Review
+* Save & Next
+* Question Palette
+* Current Question Highlight
+* Attempted Count
+* Remaining Questions
+
+---
+
+# RESULT SYSTEM
+
+After submission show:
+
+* Total Score
+* Correct Answers
+* Wrong Answers
+* Unattempted
+* Accuracy Percentage
+* Negative Marks
+* Rank
+* Time Taken
+* Section-wise Performance
+
+---
+
+# EXPLANATION SYSTEM
+
+For every wrong answer show:
+
+* Correct Answer
+* Detailed Explanation
+* Formula
+* Shortcut Method
+* Explanation Text
+* Related Concept
+
+---
+
+# STUDENT DASHBOARD
+
+## Dashboard Sections
+
+* Active Tests
+* Previous Tests
+* Saved Questions
+* Performance Graphs
+* Accuracy Analysis
+* Weak Areas
+* Strong Areas
+
+---
+
+# ANALYTICS SYSTEM
+
+## Student Analytics
+
+* Accuracy %
+* Subject Performance
+* Time Analysis
+* Improvement Tracking
+
+## Admin Analytics
+
+* Most Attempted Exams
+* Hardest Questions
+* User Activity
+* Completion Rate
+
+---
+
+# DATABASE (POSTGRESQL STRICTLY)
+
+## USERS TABLE
+
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  full_name VARCHAR(100),
+  username VARCHAR(50) UNIQUE,
+  password TEXT NOT NULL,
+  role VARCHAR(20) DEFAULT 'STUDENT',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## EXAMS TABLE
+
+```sql
+CREATE TABLE exams (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255),
+  description TEXT,
+  exam_type VARCHAR(50),
+  duration INTEGER,
+  total_marks INTEGER,
+  negative_marks FLOAT,
+  created_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## SECTIONS TABLE
+
+```sql
+CREATE TABLE sections (
+  id SERIAL PRIMARY KEY,
+  exam_id INTEGER REFERENCES exams(id),
+  section_name VARCHAR(100),
+  section_duration INTEGER
+);
+```
+
+---
+
+## QUESTIONS TABLE
+
+```sql
+CREATE TABLE questions (
+  id SERIAL PRIMARY KEY,
+  exam_id INTEGER REFERENCES exams(id),
+  section_id INTEGER REFERENCES sections(id),
+  question_text TEXT,
+  option_a TEXT,
+  option_b TEXT,
+  option_c TEXT,
+  option_d TEXT,
+  correct_answer VARCHAR(5),
+  explanation TEXT,
+  marks INTEGER,
+  negative_marks FLOAT
+);
+```
+
+---
+
+## TEST ATTEMPTS TABLE
+
+```sql
+CREATE TABLE test_attempts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  exam_id INTEGER REFERENCES exams(id),
+  score FLOAT,
+  accuracy FLOAT,
+  total_correct INTEGER,
+  total_wrong INTEGER,
+  time_taken INTEGER,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## ANSWERS TABLE
+
+```sql
+CREATE TABLE answers (
+  id SERIAL PRIMARY KEY,
+  attempt_id INTEGER REFERENCES test_attempts(id),
+  question_id INTEGER REFERENCES questions(id),
+  selected_option VARCHAR(5),
+  is_correct BOOLEAN
+);
+```
+
+---
+
+# FRONTEND REQUIREMENTS
+
+Use:
+
+* React.js
+* Tailwind CSS
+* Redux Toolkit
+* Axios
+* React Router
+* Framer Motion
+* Chart.js
+
+---
+
+# BACKEND REQUIREMENTS
+
+Use:
+
+* Node.js
+* Express.js
+* PostgreSQL
+* JWT
+* bcrypt
+* multer
+* pdf-parse
+* cors
+* helmet
+* express-rate-limit
+
+---
+
+# FRONTEND PAGES
+
+## Public Pages
+
+* Home
+* Login
+* Register
+
+## Student Pages
+
+* Dashboard
+* Active Exams
+* Exam Interface
+* Results
+* Analytics
+* Previous Attempts
+
+## Admin Pages
+
+* Admin Dashboard
+* Upload PDF
+* Manage Exams
+* Manage Questions
+* User Management
+* Analytics
+
+---
+
+# ADMIN PDF WORKFLOW
+
+1. Admin Login
+2. Upload PDF
+3. System extracts questions
+4. Admin reviews extracted questions
+5. Admin publishes exam
+6. Students can attempt exam
+
+---
+
+# EXAM FLOW
+
+1. Student Login
+2. Select Exam
+3. Start Test
+4. Timer Starts
+5. Attempt Questions
+6. Submit Test
+7. View Result
+8. Review Wrong Answers
+
+---
+
+# SECURITY FEATURES
+
+* JWT Authentication
+* Role-based Access
+* SQL Injection Protection
+* Helmet Security
+* Rate Limiting
+* Password Hashing
+* Secure APIs
+
+---
+
+# FOLDER STRUCTURE
+
+## FRONTEND
+
+```bash
+client/
+ ├── src/
+ │   ├── components/
+ │   ├── pages/
+ │   ├── redux/
+ │   ├── hooks/
+ │   ├── services/
+ │   ├── layouts/
+ │   ├── routes/
+ │   ├── utils/
+ │   └── assets/
+```
+
+---
+
+## BACKEND
+
+```bash
+server/
+ ├── controllers/
+ ├── routes/
+ ├── middleware/
+ ├── services/
+ ├── models/
+ ├── uploads/
+ ├── config/
+ ├── utils/
+ └── database/
+```
+
+---
+
+# SAMPLE DUMMY DATA
+
+## Exam
+
+```json
+{
+  "title": "SSC CGL Tier 1 Mock Test",
+  "duration": 60,
+  "totalMarks": 200
+}
+```
+
+---
+
+## Question
+
+```json
+{
+  "question": "What is the square root of 144?",
+  "options": {
+    "A": "10",
+    "B": "11",
+    "C": "12",
+    "D": "13"
+  },
+  "correctAnswer": "C",
+  "explanation": "12 × 12 = 144"
+}
+```
+
+---
+
+# REQUIRED APIs
+
+## Authentication
+
+* POST /register
+* POST /login
+
+## Exams
+
+* GET /exams
+* GET /exam/:id
+* POST /submit-exam
+* GET /results/:id
+
+## Admin
+
+* POST /admin/upload-pdf
+* POST /admin/create-exam
+* PUT /admin/edit-question
+* DELETE /admin/delete-question
+
+---
+
+# REQUIRED FEATURES
+
+MUST INCLUDE:
+
+* PDF Question Upload
+* Automatic Question Extraction
+* Timer-based Exams
+* Auto Submit
+* Detailed Result Analysis
+* Wrong Answer Explanations
+* Role-based Admin Login
+* PostgreSQL Database
+* Mobile Responsive UI
+* Production-ready Architecture
+
+---
+
+# OPTIONAL ADVANCED FEATURES
+
+* AI-generated explanations
+* Leaderboard
+* Dark Mode
+* Multi-language Support
+* Hindi + English Tests
+* Live Exams
+* AI Performance Analysis
+
+---
+
+# DEPLOYMENT
+
+Frontend:
+
+* Vercel
+
+Backend:
+
+* AWS EC2 / Render
+
+Database:
+
+* PostgreSQL
+
+File Storage:
+
+* Local Uploads or AWS S3
+
+---
+
+# FINAL EXPECTED OUTPUT
+
+Generate:
+
+* Complete React Frontend
+* Complete Node.js Backend
+* PostgreSQL Schema
+* JWT Authentication
+* Admin Panel
+* Student Panel
+* PDF Upload & Parsing Engine
+* Timer-based Exam Engine
+* Result System
+* Explanation System
+* REST APIs
+* Responsive UI
+* Production-ready Architecture

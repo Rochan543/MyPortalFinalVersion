@@ -1,0 +1,485 @@
+# FEATURE ADDITION PROMPT — TOPIC WISE MOCK TEST + STRICT EXAM SECURITY
+
+DO NOT CHANGE EXISTING SYSTEM ARCHITECTURE, DATABASE STRUCTURE, AUTHENTICATION FLOW, OR EXISTING EXAM MODULES.
+
+The current platform is already fully working successfully.
+Now extend the existing React + Node.js + PostgreSQL competitive exam platform with the following NEW FEATURES ONLY.
+
+---
+
+# NEW FEATURE 1 — TOPIC WISE MOCK TEST SYSTEM
+
+Add a completely new module called:
+
+# "Topic Wise Mock Tests"
+
+This module is separate from:
+
+* Full Mock Exams
+* Real Exams
+* Previous Year Exams
+
+It should be lightweight, fast, and topic-focused.
+
+---
+
+# FEATURE FLOW
+
+Example Structure:
+
+```text id="k7kx3g"
+Reasoning
+   ├── Blood Relations
+   ├── Coding Decoding
+   ├── Seating Arrangement
+
+Quantitative Aptitude
+   ├── Profit & Loss
+   ├── Simplification
+   ├── Percentage
+```
+
+Each topic contains:
+
+* Mini mock tests
+* Short timer-based tests
+* Instant results
+* Explanations
+
+---
+
+# ADMIN PANEL ADDITION
+
+Add a new menu in admin panel:
+
+# "Topic Mocks"
+
+---
+
+# ADMIN FEATURES
+
+Admin should be able to:
+
+* Create Subject
+* Create Topic
+* Upload Topic Mock Questions
+* Edit Topic Mock
+* Delete Topic Mock
+* Publish/Unpublish Topic Mock
+
+---
+
+# DOCUMENT UPLOAD SUPPORT
+
+Admin uploads question files using:
+
+* TXT / Notepad files
+* DOCX files
+* PDF files
+
+Supported formats:
+
+* .txt
+* .docx
+* .pdf
+
+---
+
+# FILE PARSING SYSTEM
+
+When admin uploads document:
+
+System should automatically:
+
+1. Read file
+2. Extract questions
+3. Extract options
+4. Detect correct answers
+5. Detect explanations
+6. Save into PostgreSQL
+7. Generate Topic Mock automatically
+
+---
+
+# TOPIC MOCK STRUCTURE
+
+Each topic mock contains:
+
+* Subject Name
+* Topic Name
+* Mock Title
+* Duration
+* Total Questions
+* Difficulty Level
+* Negative Marks
+* Questions
+* Explanations
+
+---
+
+# EXAMPLE
+
+```text id="2cjlwm"
+Subject: Reasoning
+Topic: Blood Relations
+Mock Title: Blood Relation Practice Set 1
+Duration: 15 Minutes
+Questions: 20
+```
+
+---
+
+# STUDENT SIDE FEATURES
+
+Students should see:
+
+```text id="0evdbw"
+Dashboard
+   ├── Topic Wise Mocks
+          ├── Reasoning
+                  ├── Blood Relations
+                          ├── Start Mock
+```
+
+---
+
+# MOCK TEST FEATURES
+
+Topic mocks should support:
+
+* Timer
+* Auto Submit
+* Question Palette
+* Mark for Review
+* Save & Next
+* Instant Result
+* Explanation Review
+
+---
+
+# TIMER SYSTEM
+
+Example:
+
+```text id="i4x31m"
+Blood Relation Mock
+Timer: 15 Minutes
+```
+
+When timer ends:
+
+* Auto submit test
+* Show results immediately
+
+---
+
+# RESULT SYSTEM
+
+After submission show:
+
+* Score
+* Accuracy
+* Correct Answers
+* Wrong Answers
+* Unattempted
+* Time Taken
+* Rank
+* Topic Weakness
+
+---
+
+# EXPLANATION SYSTEM
+
+For every wrong answer show:
+
+* Correct Answer
+* Explanation
+* Shortcut Trick
+* Related Concept
+
+---
+
+# NEW FEATURE 2 — STRICT EXAM SECURITY SYSTEM
+
+This applies ONLY for:
+
+* Final Exams
+* Real Mock Exams
+* Full-Length Exams
+
+NOT required for topic mocks.
+
+---
+
+# STRICT FULL SCREEN EXAM MONITORING
+
+During real exams:
+
+* User MUST stay on exam screen
+* Browser tab switching is monitored
+* Screen minimize is monitored
+* Window blur detection enabled
+* Fullscreen mode mandatory
+
+---
+
+# RULES
+
+## FIRST SCREEN CHANGE
+
+If user:
+
+* switches tab
+* minimizes browser
+* changes window
+* exits fullscreen
+
+THEN:
+
+Show WARNING ALERT:
+
+```text id="y3jblm"
+Warning:
+You have violated exam rules.
+If this happens again your exam will be automatically submitted.
+```
+
+---
+
+## SECOND SCREEN CHANGE
+
+If repeated again:
+
+* Auto submit exam immediately
+* Lock exam
+* Store violation count
+* Show message:
+
+```text id="9yv4tp"
+Exam automatically submitted due to multiple screen violations.
+```
+
+---
+
+# SECURITY IMPLEMENTATION
+
+Use:
+
+* visibilitychange event
+* fullscreenchange event
+* blur/focus detection
+* keyboard restriction
+
+---
+
+# RESTRICT THESE KEYS
+
+Disable during real exams:
+
+* Alt + Tab
+* Ctrl + T
+* Ctrl + W
+* F12
+* Right Click
+* Copy/Paste
+* Developer Tools shortcuts
+
+---
+
+# EXAM MODE
+
+When exam starts:
+
+Automatically:
+
+* Enter fullscreen
+* Lock exam mode
+* Enable monitoring
+
+---
+
+# DATABASE ADDITIONS
+
+Add new tables ONLY.
+
+DO NOT MODIFY existing tables unnecessarily.
+
+---
+
+# TOPIC MOCK TABLE
+
+```sql id="ap45g9"
+CREATE TABLE topic_mocks (
+  id SERIAL PRIMARY KEY,
+  subject_name VARCHAR(100),
+  topic_name VARCHAR(100),
+  mock_title VARCHAR(255),
+  duration INTEGER,
+  total_questions INTEGER,
+  difficulty_level VARCHAR(20),
+  negative_marks FLOAT,
+  created_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+# TOPIC MOCK QUESTIONS
+
+```sql id="w7o91s"
+CREATE TABLE topic_mock_questions (
+  id SERIAL PRIMARY KEY,
+  topic_mock_id INTEGER REFERENCES topic_mocks(id),
+  question_text TEXT,
+  option_a TEXT,
+  option_b TEXT,
+  option_c TEXT,
+  option_d TEXT,
+  correct_answer VARCHAR(5),
+  explanation TEXT
+);
+```
+
+---
+
+# EXAM VIOLATIONS TABLE
+
+```sql id="hnglm9"
+CREATE TABLE exam_violations (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  exam_id INTEGER,
+  violation_count INTEGER DEFAULT 0,
+  auto_submitted BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+# BACKEND REQUIREMENTS
+
+Add new APIs ONLY.
+
+DO NOT break existing APIs.
+
+---
+
+# NEW ADMIN APIs
+
+```text id="4b6p9v"
+POST /admin/topic-mock/upload
+POST /admin/topic-mock/create
+PUT /admin/topic-mock/edit
+DELETE /admin/topic-mock/delete
+GET /admin/topic-mock/list
+```
+
+---
+
+# NEW STUDENT APIs
+
+```text id="jlwm7q"
+GET /topic-mocks
+GET /topic-mock/:id
+POST /topic-mock/start
+POST /topic-mock/submit
+GET /topic-mock/result/:id
+```
+
+---
+
+# FRONTEND ADDITIONS
+
+Add pages ONLY.
+
+Do not modify current routing architecture heavily.
+
+---
+
+# NEW STUDENT PAGES
+
+* Topic Mock Listing
+* Subject Wise Topic Page
+* Topic Mock Exam Screen
+* Topic Mock Result Page
+
+---
+
+# NEW ADMIN PAGES
+
+* Topic Mock Dashboard
+* Upload Topic Mock
+* Manage Topic Mocks
+* Topic Mock Analytics
+
+---
+
+# UI REQUIREMENTS
+
+Keep SAME existing design system.
+
+Do NOT redesign whole application.
+
+Use:
+
+* Existing theme
+* Existing navbar
+* Existing sidebar
+* Existing cards/components
+
+---
+
+# FILE PROCESSING REQUIREMENTS
+
+Use:
+
+* pdf-parse for PDFs
+* mammoth for DOCX
+* fs for TXT files
+
+---
+
+# REQUIRED NPM PACKAGES
+
+```bash id="llgvdr"
+npm install mammoth pdf-parse
+```
+
+---
+
+# IMPORTANT RULES
+
+DO NOT:
+
+* Rewrite existing authentication
+* Change existing exam engine
+* Modify existing database unnecessarily
+* Break existing APIs
+* Change existing UI structure
+
+ONLY:
+
+* Extend functionality cleanly
+* Add new modules
+* Reuse existing components/services
+
+---
+
+# FINAL EXPECTED OUTPUT
+
+Generate:
+
+* Topic Wise Mock Module
+* Admin Topic Mock Upload System
+* TXT/DOCX/PDF Parsing
+* Topic Mock Exam Engine
+* Instant Results
+* Explanation System
+* Strict Fullscreen Exam Security
+* Auto Submit on Multiple Violations
+* New PostgreSQL Tables
+* New REST APIs
+* Responsive UI Integration
+* Clean Modular Code Compatible with Existing Project

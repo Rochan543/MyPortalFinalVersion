@@ -1,0 +1,325 @@
+# FIX PROMPT — RESOURCES & PREVIOUS YEAR PAPERS MODULE ERRORS
+
+Fix ONLY the Resources Module and Previous Year Papers Module errors in the existing React + Node.js + PostgreSQL project.
+
+DO NOT modify:
+
+* Existing authentication
+* Existing exam system
+* Existing topic mocks
+* Existing UI structure
+* Existing APIs unrelated to resources/papers
+
+ONLY fix the Resources and Previous Year Papers modules cleanly without disturbing other working code.
+
+Current backend errors show:
+
+```text id="a5k2vr"
+relation "resources" does not exist
+relation "previous_year_papers" does not exist
+```
+
+These errors are occurring in:
+
+* Admin panel
+* Student panel
+* Upload APIs
+* List APIs
+* Fetch APIs
+
+The issue is caused because:
+
+* PostgreSQL tables are missing
+* Drizzle schema/migrations are incomplete
+* APIs are querying non-existing tables
+
+Fix the entire module properly.
+
+---
+
+# REQUIRED FIXES
+
+## FIX 1 — CREATE MISSING DATABASE TABLES
+
+Create PostgreSQL tables properly.
+
+---
+
+# RESOURCES TABLE
+
+```sql id="i8z9lc"
+CREATE TABLE IF NOT EXISTS resources (
+  id SERIAL PRIMARY KEY,
+  subject_name VARCHAR(100),
+  topic_name VARCHAR(100),
+  title VARCHAR(255),
+  description TEXT,
+  file_name TEXT,
+  file_type VARCHAR(20),
+  file_path TEXT,
+  file_size INTEGER,
+  tags TEXT,
+  uploaded_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+# PREVIOUS YEAR PAPERS TABLE
+
+```sql id="m2u5fh"
+CREATE TABLE IF NOT EXISTS previous_year_papers (
+  id SERIAL PRIMARY KEY,
+  exam_name VARCHAR(100),
+  exam_year INTEGER,
+  shift_name VARCHAR(50),
+  subject_name VARCHAR(100),
+  title VARCHAR(255),
+  description TEXT,
+  file_name TEXT,
+  file_type VARCHAR(20),
+  file_path TEXT,
+  file_size INTEGER,
+  uploaded_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+# FIX 2 — DRIZZLE ORM SCHEMA FIX
+
+Ensure Drizzle schema files are created properly.
+
+Add:
+
+* resources schema
+* previousYearPapers schema
+
+Export them correctly.
+
+Ensure all tables are included in:
+
+* drizzle schema index
+* database exports
+
+---
+
+# FIX 3 — MIGRATION FIX
+
+Generate and run migrations correctly.
+
+Ensure:
+
+* tables are actually created in PostgreSQL
+* migrations run automatically
+* no relation errors occur
+
+Use:
+
+```bash id="x4n1mf"
+pnpm drizzle-kit generate
+pnpm drizzle-kit migrate
+```
+
+OR existing migration flow used in project.
+
+---
+
+# FIX 4 — API ROUTE FIXES
+
+Fix APIs inside:
+
+```text id="c0l7wp"
+src/routes/resources.ts
+```
+
+Current APIs are failing because tables do not exist.
+
+Fix:
+
+* GET /api/resources
+* GET /api/previous-papers
+* POST /api/admin/resources/upload
+* POST /api/admin/previous-papers/upload
+* GET /api/admin/previous-papers/list
+
+Ensure:
+
+* queries work correctly
+* inserts work correctly
+* uploads save successfully
+* responses return proper JSON
+
+---
+
+# FIX 5 — FILE UPLOAD FIX
+
+Ensure uploads directory exists automatically.
+
+Create folders if missing:
+
+```text id="b9q3el"
+uploads/resources
+uploads/papers
+```
+
+Use:
+
+```js id="h6d1na"
+fs.mkdirSync(path, { recursive: true })
+```
+
+---
+
+# FIX 6 — ADMIN PANEL FIX
+
+Fix admin panel errors.
+
+Admin should be able to:
+
+* Upload resource
+* Upload previous paper
+* View uploaded files
+* Delete files
+* Edit metadata
+
+No blank pages.
+No API crashes.
+No 500 errors.
+
+---
+
+# FIX 7 — STUDENT PANEL FIX
+
+Fix student panel rendering.
+
+Students should be able to:
+
+* View resources
+* View previous papers
+* Open PDFs
+* Download files
+* Filter/search files
+
+Ensure:
+
+* loading states work
+* empty states work
+* API failures handled properly
+
+---
+
+# FIX 8 — FILE VIEWER FIX
+
+Fix PDF/document rendering.
+
+PDFs should:
+
+* open fully
+* scroll correctly
+* not crash
+* support download
+
+TXT/DOCX should:
+
+* render properly
+* preserve formatting
+
+---
+
+# FIX 9 — ERROR HANDLING
+
+Add proper backend try/catch.
+
+Instead of crashing:
+
+Return:
+
+```json id="p2m4dv"
+{
+  "success": false,
+  "message": "Failed to fetch resources"
+}
+```
+
+Add:
+
+* logging
+* validation
+* null checks
+
+---
+
+# FIX 10 — FRONTEND API SAFETY
+
+Prevent frontend crashes if:
+
+* API returns empty array
+* API fails
+* file missing
+
+Show:
+
+* "No resources available"
+* "No previous papers uploaded"
+
+instead of crashing.
+
+---
+
+# IMPORTANT RULES
+
+DO NOT:
+
+* rewrite authentication
+* change existing exam system
+* redesign UI
+* modify unrelated APIs
+* break existing working code
+
+ONLY:
+
+* fix resources module
+* fix previous papers module
+* create missing tables
+* fix migrations
+* fix APIs
+* fix uploads
+* fix rendering
+
+---
+
+# CURRENT ERROR REFERENCES
+
+Errors currently happening include:
+
+```text id="iv0jfd"
+relation "resources" does not exist
+relation "previous_year_papers" does not exist
+statusCode: 500
+Failed query
+request errored
+```
+
+Fix all of them completely. 
+
+---
+
+# FINAL EXPECTED OUTPUT
+
+Generate:
+
+* Fixed PostgreSQL tables
+* Fixed Drizzle schemas
+* Working migrations
+* Working upload APIs
+* Working admin resources panel
+* Working admin previous papers panel
+* Working student resources panel
+* Working student previous papers panel
+* PDF/TXT/DOCX viewing
+* Download support
+* Stable backend without 500 errors
+* Clean integration with existing project without disturbing other modules
