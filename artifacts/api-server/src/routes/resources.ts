@@ -126,7 +126,7 @@ router.delete("/admin/resources/:id", authenticate, requireAdmin, async (req, re
 });
 
 // Student: List resources
-router.get("/resources", authenticate, async (req, res) => {
+router.get("/resources", async (req, res) => {
   try {
     const { subject, topic, search } = req.query as Record<string, string>;
     let query = db.select().from(resourcesTable);
@@ -180,7 +180,7 @@ router.get("/resources/:id", authenticate, async (req, res) => {
 //   }
 // });
 
-router.get("/resources/:id/file", authenticate, async (req, res) => {
+router.get("/resources/:id/file", async (req, res) => {
   try {
     const [resource] = await db
       .select()
@@ -311,7 +311,7 @@ router.delete("/admin/previous-papers/:id", authenticate, requireAdmin, async (r
 });
 
 // Student: List papers
-router.get("/previous-papers", authenticate, async (req, res) => {
+router.get("/previous-papers", async (req, res) => {
   try {
     const { examName, year, search } = req.query as Record<string, string>;
     const conditions = [];
@@ -362,7 +362,7 @@ router.get("/previous-papers/:id", authenticate, async (req, res) => {
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // });
-router.get("/previous-papers/:id/file", authenticate, async (req, res) => {
+router.get("/previous-papers/:id/file", async (req, res) => {
   try {
     const [paper] = await db
       .select()
