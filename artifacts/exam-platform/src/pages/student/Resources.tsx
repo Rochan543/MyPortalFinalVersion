@@ -42,7 +42,8 @@ export default function Resources() {
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const blobUrlRef = useRef<string | null>(null);
 
-  const apiBase = (import.meta.env.BASE_URL || "").replace(/\/$/, "") + "/api";
+  // const apiBase = (import.meta.env.BASE_URL || "").replace(/\/$/, "") + "/api";
+  const apiBase = import.meta.env.VITE_API_URL + "/api";
 
   useEffect(() => { fetchResources(); }, []);
 
