@@ -35,12 +35,12 @@ const storage = new CloudinaryStorage({
       ? "previous-papers"
       : "resources";
 
-    return {
-      folder: `myportal/${folder}`,
-      resource_type: "raw",
-      public_id: `${Date.now()}-${file.originalname}`,
-    };
-  },
+return {
+  folder: `myportal/${folder}`,
+  resource_type: "auto",
+  public_id: `${Date.now()}-${file.originalname}`,
+};
+    },
 });
 
 const upload = multer({
