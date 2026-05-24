@@ -38,7 +38,7 @@ const storage = new CloudinaryStorage({
 return {
   folder: `myportal/${folder}`,
   resource_type: "auto",
-  public_id: `${Date.now()}-${file.originalname}`,
+  public_id: `${Date.now()}-${path.parse(file.originalname).name}`,
 };
     },
 });
