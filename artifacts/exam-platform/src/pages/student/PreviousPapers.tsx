@@ -144,10 +144,15 @@ export default function PreviousPapers() {
   //     .catch(() => toast({ title: "Download failed", variant: "destructive" }));
   // }
 
-  function downloadPaper(paper: Paper) {
+function downloadPaper(paper: Paper) {
   if (!paper.filePath) return;
 
-  window.open(paper.filePath, "_blank");
+  const a = document.createElement("a");
+  a.href = paper.filePath;
+  a.download = paper.fileName || "paper.pdf";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
   const examNames = [...new Set(papers.map(p => p.examName).filter(Boolean))] as string[];
@@ -321,11 +326,25 @@ export default function PreviousPapers() {
               //   title={viewing?.title || "PDF Viewer"}
               // />
 
-              <iframe
-              src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfBlobUrl)}`}
-              className="w-full h-[70vh] border rounded bg-muted"
-              title={viewing?.title || "PDF Viewer"}
-            />
+            //   <iframe
+            //   src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfBlobUrl)}`}
+            //   className="w-full h-[70vh] border rounded bg-muted"
+            //   title={viewing?.title || "PDF Viewer"}
+            // />
+            <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
+  <FileText className="h-16 w-16 text-red-500" />
+
+  <p className="text-lg font-medium">
+    Open PDF in new tab
+  </p>
+
+  <Button
+    onClick={() => window.open(pdfBlobUrl!, "_blank")}
+  >
+    <Eye className="mr-2 h-4 w-4" />
+    Open PDF
+  </Button>
+</div>
             ) : viewing?.fileType === "pdf" && !pdfBlobUrl ? (
               <div className="flex flex-col items-center justify-center h-[70vh] gap-3 text-muted-foreground">
                 <FileText className="h-12 w-12" />

@@ -160,10 +160,15 @@ export default function Resources() {
   //     .catch(() => toast({ title: "Download failed", variant: "destructive" }))
   //     .finally(() => setViewLoading(false));
   // }
-  function downloadResource(resource: Resource) {
+function downloadResource(resource: Resource) {
   if (!resource.filePath) return;
 
-  window.open(resource.filePath, "_blank");
+  const a = document.createElement("a");
+  a.href = resource.filePath;
+  a.download = resource.fileName || "resource";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
   const subjects = [...new Set(resources.map(r => r.subjectName).filter(Boolean))] as string[];
@@ -315,11 +320,25 @@ export default function Resources() {
               //   className="w-full h-[60vh] border rounded bg-muted"
               //   title={viewing?.title || "PDF Viewer"}
               // />
-              <iframe
-                src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfBlobUrl)}`}
-                className="w-full h-[60vh] border rounded bg-muted"
-                title={viewing?.title || "PDF Viewer"}
-              />
+              // <iframe
+              //   src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfBlobUrl)}`}
+              //   className="w-full h-[60vh] border rounded bg-muted"
+              //   title={viewing?.title || "PDF Viewer"}
+              // />
+<div className="flex flex-col items-center justify-center h-[60vh] gap-4">
+  <FileText className="h-16 w-16 text-red-500" />
+
+  <p className="text-lg font-medium">
+    Open PDF in new tab
+  </p>
+
+  <Button
+    onClick={() => window.open(pdfBlobUrl!, "_blank")}
+  >
+    <Eye className="mr-2 h-4 w-4" />
+    Open PDF
+  </Button>
+</div>
             ) : viewing?.fileType === "pdf" && !pdfBlobUrl ? (
               <div className="flex flex-col items-center justify-center h-[60vh] gap-3 text-muted-foreground">
                 <FileText className="h-12 w-12" />

@@ -37,7 +37,7 @@ const storage = new CloudinaryStorage({
 
 return {
   folder: `myportal/${folder}`,
-  resource_type: "auto",
+  resource_type: "raw",
   public_id: `${Date.now()}-${path.parse(file.originalname).name}`,
 };
     },
@@ -180,6 +180,32 @@ router.get("/resources/:id", authenticate, async (req, res) => {
 //   }
 // });
 
+// router.get("/resources/:id/file", async (req, res) => {
+//   try {
+//     const [resource] = await db
+//       .select()
+//       .from(resourcesTable)
+//       .where(eq(resourcesTable.id, parseInt(String(req.params.id))))
+//       .limit(1);
+
+//     if (!resource?.filePath) {
+//       res.status(404).json({ error: "File not found" });
+//       return;
+//     }
+
+//     const download = req.query.download === "1";
+
+//     if (download) {
+//       return res.redirect(resource.filePath);
+//     }
+
+//     return res.redirect(resource.filePath);
+
+//   } catch (err) {
+//     logger.error({ err });
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 router.get("/resources/:id/file", async (req, res) => {
   try {
     const [resource] = await db
@@ -199,7 +225,9 @@ router.get("/resources/:id/file", async (req, res) => {
       return res.redirect(resource.filePath);
     }
 
-    return res.redirect(resource.filePath);
+    return res.redirect(
+      resource.filePath.replace("/upload/", "/upload/fl_attachment:false/")
+    );
 
   } catch (err) {
     logger.error({ err });
@@ -362,6 +390,32 @@ router.get("/previous-papers/:id", authenticate, async (req, res) => {
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // });
+// router.get("/previous-papers/:id/file", async (req, res) => {
+//   try {
+//     const [paper] = await db
+//       .select()
+//       .from(previousYearPapersTable)
+//       .where(eq(previousYearPapersTable.id, parseInt(String(req.params.id))))
+//       .limit(1);
+
+//     if (!paper?.filePath) {
+//       res.status(404).json({ error: "File not found" });
+//       return;
+//     }
+
+//     const download = req.query.download === "1";
+
+//     if (download) {
+//       return res.redirect(paper.filePath);
+//     }
+
+//     return res.redirect(paper.filePath);
+
+//   } catch (err) {
+//     logger.error({ err });
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 router.get("/previous-papers/:id/file", async (req, res) => {
   try {
     const [paper] = await db
@@ -381,7 +435,10 @@ router.get("/previous-papers/:id/file", async (req, res) => {
       return res.redirect(paper.filePath);
     }
 
-    return res.redirect(paper.filePath);
+    // FORCE INLINE PDF VIEW
+    return res.redirect(
+      paper.filePath.replace("/upload/", "/upload/fl_attachment:false/")
+    );
 
   } catch (err) {
     logger.error({ err });
